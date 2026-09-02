@@ -1,0 +1,184 @@
+/* ------------------------------------------------------------------ */
+/* Layout                                                              */
+/* ------------------------------------------------------------------ */
+
+.profile-section {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.profile-card {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* User info card                                                      */
+/* ------------------------------------------------------------------ */
+
+.profile-user-card {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.profile-avatar {
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-name {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: var(--ink);
+}
+
+.profile-email,
+.profile-member-since {
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+    margin-top: 0.15rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Stat card icons                                                     */
+/* ------------------------------------------------------------------ */
+
+.profile-stat-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Section headings                                                    */
+/* ------------------------------------------------------------------ */
+
+.profile-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--ink);
+    margin-bottom: 1rem;
+}
+
+.profile-section-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--ink-muted);
+}
+
+/* ------------------------------------------------------------------ */
+/* Transaction table                                                   */
+/* ------------------------------------------------------------------ */
+
+.profile-table-wrap {
+    overflow-x: auto;
+}
+
+.profile-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.profile-table th {
+    text-align: left;
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.profile-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    white-space: nowrap;
+}
+
+.profile-table tbody tr:hover {
+    background: var(--paper-warm);
+}
+
+.profile-table-amount {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+}
+
+/* ------------------------------------------------------------------ */
+/* Category badges                                                     */
+/* ------------------------------------------------------------------ */
+
+.profile-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    font-weight: 500;
+}
+
+.profile-badge-food { background: var(--accent-light); color: var(--accent); }
+.profile-badge-transport { background: var(--accent-2-light); color: var(--accent-2); }
+.profile-badge-bills { background: var(--border-soft); color: var(--ink-soft); }
+.profile-badge-health { background: var(--danger-light); color: var(--danger); }
+.profile-badge-entertainment { background: var(--accent-2-light); color: var(--accent-2); }
+.profile-badge-shopping { background: var(--accent-light); color: var(--accent); }
+.profile-badge-other { background: var(--paper-warm); color: var(--ink-muted); }
+
+/* ------------------------------------------------------------------ */
+/* Category breakdown                                                  */
+/* ------------------------------------------------------------------ */
+
+.profile-card.progress-card .progress-row {
+    grid-template-columns: 110px 1fr 70px;
+    gap: 0.75rem;
+}
+
+.progress-amount {
+    text-align: right;
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-muted);
+}
+
+.progress-transport { background: var(--accent-2); }
+.progress-health { background: var(--danger); }
+.progress-entertainment { background: var(--accent-2); }
+.progress-shopping { background: var(--accent); }
+.progress-other { background: var(--ink-faint); }
+
+/* ------------------------------------------------------------------ */
+/* Responsive                                                          */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 600px) {
+    .profile-user-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .profile-card.progress-card .progress-row {
+        grid-template-columns: 90px 1fr 60px;
+    }
+}
