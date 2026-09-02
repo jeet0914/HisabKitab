@@ -40,7 +40,7 @@ def register():
 
         user_id = create_user(name, email, password)
         session["user_id"] = user_id
-        return redirect(url_for("profile"))
+        return redirect(url_for("landing"))
 
     return render_template("register.html")
 
@@ -62,7 +62,7 @@ def login():
             )
 
         session["user_id"] = user["id"]
-        return redirect(url_for("profile"))
+        return redirect(url_for("landing"))
 
     return render_template("login.html")
 
