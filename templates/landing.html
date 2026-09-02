@@ -4,6 +4,10 @@
 
 {% block content %}
 
+{% if session.user_id %}
+<p class="welcome-back">Welcome back</p>
+{% endif %}
+
 <section class="hero">
     <div class="hero-inner">
         <div class="hero-badge">
@@ -118,6 +122,7 @@
 {% endblock %}
 
 {% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
 <style>
     .modal-overlay {
         display: none;
