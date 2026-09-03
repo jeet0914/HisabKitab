@@ -56,6 +56,44 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* Date-range filter                                                   */
+/* ------------------------------------------------------------------ */
+
+.profile-filter-card {
+    padding: 1rem 1.5rem;
+}
+
+.profile-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.filter-pill {
+    display: inline-block;
+    padding: 0.45rem 1rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--paper);
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.filter-pill:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+}
+
+.filter-pill-active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--paper);
+}
+
+/* ------------------------------------------------------------------ */
 /* Stat card icons                                                     */
 /* ------------------------------------------------------------------ */
 

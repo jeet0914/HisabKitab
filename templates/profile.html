@@ -19,6 +19,19 @@
         </div>
     </div>
 
+    <div class="profile-card profile-filter-card">
+        <div class="profile-filter-row">
+            <a href="{{ url_for('profile', range='this_month') }}"
+               class="filter-pill{{ ' filter-pill-active' if active_range == 'this_month' else '' }}">This Month</a>
+            <a href="{{ url_for('profile', range='last_month') }}"
+               class="filter-pill{{ ' filter-pill-active' if active_range == 'last_month' else '' }}">Last Month</a>
+            <a href="{{ url_for('profile', range='last_3_months') }}"
+               class="filter-pill{{ ' filter-pill-active' if active_range == 'last_3_months' else '' }}">Last 3 Months</a>
+            <a href="{{ url_for('profile', range='all_time') }}"
+               class="filter-pill{{ ' filter-pill-active' if active_range == 'all_time' else '' }}">All Time</a>
+        </div>
+    </div>
+
     <div class="stat-row">
         {% for s in stats %}
         <div class="stat-card">
