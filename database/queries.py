@@ -5,9 +5,38 @@ and closes it before returning. Formatting (currency symbols, display date
 strings) happens in app.py, not here — these functions return raw values.
 """
 
-from datetime import datetime
+from datetime import date, datetime, timedelta
 
 from database.db import get_db
+
+VALID_RANGES = {"this_month", "last_month", "last_3_months", "all_time"}
+
+
+def _get_date_bounds(range_key):
+    """Return (start, end) as 'YYYY-MM-DD' strings for range_key; end is exclusive."""
+    today = date.today()
+
+    if range_key == "this_month":
+        start = today.replace(day=1)
+        end = (date(today.year + 1, 1, 1) if today.month == 12
+               else date(today.year, today.month + 1, 1))
+        return start.isoformat(), end.isoformat()
+
+    if range_key == "last_month":
+        end = today.replace(day=1)
+        start = (date(today.year - 1, 12, 1) if today.month == 1
+                  else date(today.year, today.month - 1, 1))
+        return start.isoformat(), end.isoformat()
+
+    if range_key == "last_3_months":
+        month_index = today.month - 1 - 2
+        year = today.year + month_index // 12
+        month = month_index % 12 + 1
+        start = date(year, month, 1)
+        end = today + timedelta(days=1)
+        return start.isoformat(), end.isoformat()
+
+    return "0000-01-01", "9999-12-31"  # all_time / unknown key
 
 
 def get_user_by_id(user_id):
@@ -30,17 +59,18 @@ def get_user_by_id(user_id):
     }
 
 
-def get_summary_stats(user_id):
+def get_summary_stats(user_id, range_key="all_time"):
     """Return {'total_spent', 'transaction_count', 'top_category'}."""
     conn = get_db()
+    start, end = _get_date_bounds(range_key)
     totals = conn.execute(
         """
         SELECT COUNT(*) AS transaction_count,
                COALESCE(SUM(amount), 0) AS total_spent
         FROM expenses
-        WHERE user_id = ?
+        WHERE user_id = ? AND date >= ? AND date < ?
         """,
-        (user_id,),
+        (user_id, start, end),
     ).fetchone()
 
     if totals["transaction_count"] == 0:
@@ -51,12 +81,12 @@ def get_summary_stats(user_id):
         """
         SELECT category, SUM(amount) AS cat_total
         FROM expenses
-        WHERE user_id = ?
+        WHERE user_id = ? AND date >= ? AND date < ?
         GROUP BY category
         ORDER BY cat_total DESC
         LIMIT 1
         """,
-        (user_id,),
+        (user_id, start, end),
     ).fetchone()
     conn.close()
 
@@ -67,18 +97,19 @@ def get_summary_stats(user_id):
     }
 
 
-def get_recent_transactions(user_id, limit=10):
+def get_recent_transactions(user_id, range_key="all_time", limit=10):
     """Return list of dicts (date, description, category, amount), newest first."""
     conn = get_db()
+    start, end = _get_date_bounds(range_key)
     rows = conn.execute(
         """
         SELECT date, description, category, amount
         FROM expenses
-        WHERE user_id = ?
+        WHERE user_id = ? AND date >= ? AND date < ?
         ORDER BY date DESC, id DESC
         LIMIT ?
         """,
-        (user_id, limit),
+        (user_id, start, end, limit),
     ).fetchall()
     conn.close()
     return [
@@ -92,18 +123,19 @@ def get_recent_transactions(user_id, limit=10):
     ]
 
 
-def get_category_breakdown(user_id):
+def get_category_breakdown(user_id, range_key="all_time"):
     """Return list of dicts (name, amount, pct); pct ints sum to 100."""
     conn = get_db()
+    start, end = _get_date_bounds(range_key)
     rows = conn.execute(
         """
         SELECT category, SUM(amount) AS amount
         FROM expenses
-        WHERE user_id = ?
+        WHERE user_id = ? AND date >= ? AND date < ?
         GROUP BY category
         ORDER BY amount DESC
         """,
-        (user_id,),
+        (user_id, start, end),
     ).fetchall()
     conn.close()
 

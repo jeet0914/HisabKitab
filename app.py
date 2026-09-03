@@ -6,6 +6,7 @@ from werkzeug.security import check_password_hash
 
 from database.db import create_user, get_db, get_user_by_email, init_db, seed_db
 from database.queries import (
+    VALID_RANGES,
     get_category_breakdown,
     get_recent_transactions,
     get_summary_stats,
@@ -125,6 +126,9 @@ def profile():
 
     user_id = session["user_id"]
 
+    raw_range = request.args.get("range", "all_time")
+    range_key = raw_range if raw_range in VALID_RANGES else "all_time"
+
     user_row = get_user_by_id(user_id)
     user = {
         "name": user_row["name"],
@@ -133,14 +137,14 @@ def profile():
         "member_since": user_row["member_since"],
     }
 
-    summary = get_summary_stats(user_id)
+    summary = get_summary_stats(user_id, range_key=range_key)
     stats = [
         {"label": "Total Spent", "value": _format_currency(summary["total_spent"]), "icon": "credit-card"},
         {"label": "Transactions", "value": str(summary["transaction_count"]), "icon": "list"},
         {"label": "Top Category", "value": summary["top_category"], "icon": "tag"},
     ]
 
-    raw_transactions = get_recent_transactions(user_id, limit=10)
+    raw_transactions = get_recent_transactions(user_id, range_key=range_key, limit=10)
     transactions = [
         {
             "date": _format_date(t["date"]),
@@ -151,7 +155,7 @@ def profile():
         for t in raw_transactions
     ]
 
-    raw_breakdown = get_category_breakdown(user_id)
+    raw_breakdown = get_category_breakdown(user_id, range_key=range_key)
     category_breakdown = [
         {
             "category": c["name"],
@@ -167,6 +171,7 @@ def profile():
         stats=stats,
         transactions=transactions,
         category_breakdown=category_breakdown,
+        active_range=range_key,
     )
 
 
