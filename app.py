@@ -1,12 +1,43 @@
 import os
+from datetime import datetime
 
 from flask import Flask, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash
 
 from database.db import create_user, get_db, get_user_by_email, init_db, seed_db
+from database.queries import (
+    get_category_breakdown,
+    get_recent_transactions,
+    get_summary_stats,
+    get_user_by_id,
+)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
+
+
+# ------------------------------------------------------------------ #
+# Formatting helpers (shared — do not edit inside subagent tasks)     #
+# ------------------------------------------------------------------ #
+
+def _format_currency(amount):
+    """Render a numeric amount as an Indian-Rupee string, e.g. ₹1,234.56."""
+    return f"₹{amount:,.2f}"
+
+
+def _format_date(date_str):
+    """Convert a stored 'YYYY-MM-DD' date into display form, e.g. 'Aug 28, 2026'."""
+    return datetime.strptime(date_str, "%Y-%m-%d").strftime("%b %d, %Y")
+
+
+def _compute_initials(name):
+    """Derive up to 2 uppercase initials from a display name, e.g. 'Demo User' -> 'DU'."""
+    parts = [p for p in name.split() if p]
+    if not parts:
+        return ""
+    if len(parts) == 1:
+        return parts[0][:2].upper()
+    return (parts[0][0] + parts[-1][0]).upper()
 
 
 # ------------------------------------------------------------------ #
@@ -92,33 +123,42 @@ def profile():
     if not session.get("user_id"):
         return redirect(url_for("login"))
 
+    user_id = session["user_id"]
+
+    user_row = get_user_by_id(user_id)
     user = {
-        "name": "Jane Doe",
-        "email": "jane.doe@example.com",
-        "initials": "JD",
-        "member_since": "March 2025",
+        "name": user_row["name"],
+        "email": user_row["email"],
+        "initials": _compute_initials(user_row["name"]),
+        "member_since": user_row["member_since"],
     }
 
+    summary = get_summary_stats(user_id)
     stats = [
-        {"label": "Total Spent", "value": "$1,284.50", "icon": "credit-card"},
-        {"label": "Transactions", "value": "27", "icon": "list"},
-        {"label": "Top Category", "value": "Food", "icon": "tag"},
+        {"label": "Total Spent", "value": _format_currency(summary["total_spent"]), "icon": "credit-card"},
+        {"label": "Transactions", "value": str(summary["transaction_count"]), "icon": "list"},
+        {"label": "Top Category", "value": summary["top_category"], "icon": "tag"},
     ]
 
+    raw_transactions = get_recent_transactions(user_id, limit=10)
     transactions = [
-        {"date": "Aug 28, 2026", "description": "Whole Foods grocery run", "category": "Food", "amount": "$64.20"},
-        {"date": "Aug 26, 2026", "description": "Metro monthly pass", "category": "Transport", "amount": "$95.00"},
-        {"date": "Aug 24, 2026", "description": "Electric bill", "category": "Bills", "amount": "$110.75"},
-        {"date": "Aug 21, 2026", "description": "Movie night", "category": "Entertainment", "amount": "$32.00"},
-        {"date": "Aug 19, 2026", "description": "Pharmacy pickup", "category": "Health", "amount": "$18.40"},
+        {
+            "date": _format_date(t["date"]),
+            "description": t["description"],
+            "category": t["category"],
+            "amount": _format_currency(t["amount"]),
+        }
+        for t in raw_transactions
     ]
 
+    raw_breakdown = get_category_breakdown(user_id)
     category_breakdown = [
-        {"category": "Food", "amount": "$412.30", "percent": 32},
-        {"category": "Bills", "amount": "$310.75", "percent": 24},
-        {"category": "Transport", "amount": "$255.00", "percent": 20},
-        {"category": "Entertainment", "amount": "$180.00", "percent": 14},
-        {"category": "Health", "amount": "$126.45", "percent": 10},
+        {
+            "category": c["name"],
+            "amount": _format_currency(c["amount"]),
+            "percent": c["pct"],
+        }
+        for c in raw_breakdown
     ]
 
     return render_template(
