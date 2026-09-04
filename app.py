@@ -1,7 +1,7 @@
 import os
 from datetime import date, datetime
 
-from flask import Flask, redirect, render_template, request, session, url_for
+from flask import Flask, abort, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash
 
 from database.db import (
@@ -9,9 +9,11 @@ from database.db import (
     create_expense,
     create_user,
     get_db,
+    get_expense_by_id,
     get_user_by_email,
     init_db,
     seed_db,
+    update_expense,
 )
 from database.queries import (
     VALID_RANGES,
@@ -155,6 +157,7 @@ def profile():
     raw_transactions = get_recent_transactions(user_id, range_key=range_key, limit=10)
     transactions = [
         {
+            "id": t["id"],
             "date": _format_date(t["date"]),
             "description": t["description"],
             "category": t["category"],
@@ -225,9 +228,62 @@ def add_expense():
     )
 
 
-@app.route("/expenses/<int:id>/edit")
+@app.route("/expenses/<int:id>/edit", methods=["GET", "POST"])
 def edit_expense(id):
-    return "Edit expense — coming in Step 8"
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    expense = get_expense_by_id(id)
+    if expense is None or expense["user_id"] != session["user_id"]:
+        abort(404)
+
+    if request.method == "POST":
+        amount_raw = request.form.get("amount", "").strip()
+        category = request.form.get("category", "").strip()
+        expense_date = request.form.get("date", "").strip()
+        description = request.form.get("description", "").strip()
+
+        try:
+            amount = float(amount_raw)
+        except ValueError:
+            amount = None
+
+        error = None
+        if amount is None or amount <= 0:
+            error = "Amount must be a positive number."
+        elif category not in CATEGORIES:
+            error = "Please select a valid category."
+        elif not expense_date:
+            error = "Please choose a date."
+
+        if error:
+            return render_template(
+                "edit_expense.html",
+                error=error,
+                categories=CATEGORIES,
+                expense={
+                    "id": id,
+                    "amount": amount_raw,
+                    "category": category,
+                    "date": expense_date,
+                    "description": description,
+                },
+            )
+
+        update_expense(id, amount, category, expense_date, description or None)
+        return redirect(url_for("profile"))
+
+    return render_template(
+        "edit_expense.html",
+        categories=CATEGORIES,
+        expense={
+            "id": expense["id"],
+            "amount": expense["amount"],
+            "category": expense["category"],
+            "date": expense["date"],
+            "description": expense["description"] or "",
+        },
+    )
 
 
 @app.route("/expenses/<int:id>/delete")
