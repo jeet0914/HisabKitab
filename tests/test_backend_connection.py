@@ -58,7 +58,7 @@ def test_get_recent_transactions_ordered_newest_first(app):
     assert len(txns) == 8
     dates = [t["date"] for t in txns]
     assert dates == sorted(dates, reverse=True)
-    assert set(txns[0].keys()) == {"date", "description", "category", "amount"}
+    assert set(txns[0].keys()) == {"id", "date", "description", "category", "amount"}
 
 
 def test_get_recent_transactions_no_expenses_returns_empty_list(app):

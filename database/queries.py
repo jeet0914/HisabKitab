@@ -103,7 +103,7 @@ def get_recent_transactions(user_id, range_key="all_time", limit=10):
     start, end = _get_date_bounds(range_key)
     rows = conn.execute(
         """
-        SELECT date, description, category, amount
+        SELECT id, date, description, category, amount
         FROM expenses
         WHERE user_id = ? AND date >= ? AND date < ?
         ORDER BY date DESC, id DESC
@@ -114,6 +114,7 @@ def get_recent_transactions(user_id, range_key="all_time", limit=10):
     conn.close()
     return [
         {
+            "id": row["id"],
             "date": row["date"],
             "description": row["description"],
             "category": row["category"],
