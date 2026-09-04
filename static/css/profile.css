@@ -55,6 +55,19 @@
     margin-top: 0.15rem;
 }
 
+.profile-add-btn {
+    margin-left: auto;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.profile-add-btn i {
+    width: 18px;
+    height: 18px;
+}
+
 /* ------------------------------------------------------------------ */
 /* Date-range filter                                                   */
 /* ------------------------------------------------------------------ */
@@ -214,6 +227,10 @@
     .profile-user-card {
         flex-direction: column;
         text-align: center;
+    }
+
+    .profile-add-btn {
+        margin-left: 0;
     }
 
     .profile-card.progress-card .progress-row {
