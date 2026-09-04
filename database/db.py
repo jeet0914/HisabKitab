@@ -77,6 +77,22 @@ def create_user(name, email, password):
     return user_id
 
 
+def create_expense(user_id, amount, category, expense_date, description):
+    """Insert a new expense row. Returns the new expense's id."""
+    conn = get_db()
+    cursor = conn.execute(
+        """
+        INSERT INTO expenses (user_id, amount, category, date, description)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (user_id, amount, category, expense_date, description),
+    )
+    conn.commit()
+    expense_id = cursor.lastrowid
+    conn.close()
+    return expense_id
+
+
 def seed_db():
     """Insert one demo user and 8 sample expenses, once only."""
     conn = get_db()

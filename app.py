@@ -1,10 +1,18 @@
 import os
-from datetime import datetime
+from datetime import date, datetime
 
 from flask import Flask, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash
 
-from database.db import create_user, get_db, get_user_by_email, init_db, seed_db
+from database.db import (
+    CATEGORIES,
+    create_expense,
+    create_user,
+    get_db,
+    get_user_by_email,
+    init_db,
+    seed_db,
+)
 from database.queries import (
     VALID_RANGES,
     get_category_breakdown,
@@ -175,9 +183,46 @@ def profile():
     )
 
 
-@app.route("/expenses/add")
+@app.route("/expenses/add", methods=["GET", "POST"])
 def add_expense():
-    return "Add expense — coming in Step 7"
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        amount_raw = request.form.get("amount", "").strip()
+        category = request.form.get("category", "").strip()
+        expense_date = request.form.get("date", "").strip()
+        description = request.form.get("description", "").strip()
+
+        try:
+            amount = float(amount_raw)
+        except ValueError:
+            amount = None
+
+        error = None
+        if amount is None or amount <= 0:
+            error = "Amount must be a positive number."
+        elif category not in CATEGORIES:
+            error = "Please select a valid category."
+        elif not expense_date:
+            error = "Please choose a date."
+
+        if error:
+            return render_template(
+                "add_expense.html",
+                error=error,
+                categories=CATEGORIES,
+                today=date.today().isoformat(),
+            )
+
+        create_expense(session["user_id"], amount, category, expense_date, description or None)
+        return redirect(url_for("profile"))
+
+    return render_template(
+        "add_expense.html",
+        categories=CATEGORIES,
+        today=date.today().isoformat(),
+    )
 
 
 @app.route("/expenses/<int:id>/edit")
