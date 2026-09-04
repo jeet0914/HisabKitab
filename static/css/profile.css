@@ -177,6 +177,27 @@
     color: var(--ink);
 }
 
+.profile-table-actions {
+    text-align: right;
+}
+
+.table-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-muted);
+    transition: color 0.2s;
+}
+
+.table-action-btn:hover {
+    color: var(--accent);
+}
+
+.table-action-btn i {
+    width: 16px;
+    height: 16px;
+}
+
 /* ------------------------------------------------------------------ */
 /* Category badges                                                     */
 /* ------------------------------------------------------------------ */

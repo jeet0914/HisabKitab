@@ -93,6 +93,31 @@ def create_expense(user_id, amount, category, expense_date, description):
     return expense_id
 
 
+def get_expense_by_id(expense_id):
+    """Return the expense row matching expense_id, or None if no such expense exists."""
+    conn = get_db()
+    expense = conn.execute(
+        "SELECT * FROM expenses WHERE id = ?", (expense_id,)
+    ).fetchone()
+    conn.close()
+    return expense
+
+
+def update_expense(expense_id, amount, category, expense_date, description):
+    """Update an existing expense row in place."""
+    conn = get_db()
+    conn.execute(
+        """
+        UPDATE expenses
+        SET amount = ?, category = ?, date = ?, description = ?
+        WHERE id = ?
+        """,
+        (amount, category, expense_date, description, expense_id),
+    )
+    conn.commit()
+    conn.close()
+
+
 def seed_db():
     """Insert one demo user and 8 sample expenses, once only."""
     conn = get_db()
